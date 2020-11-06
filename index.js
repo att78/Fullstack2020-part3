@@ -27,6 +27,7 @@ let persons =
         }
     ]
 
+let size = persons.length
 
 
 app.get('/', (req, res) => {
@@ -35,6 +36,13 @@ app.get('/', (req, res) => {
 
 app.get('/api/persons', (req, res) => {
     res.json(persons)
+})
+
+app.get('/api/info', (req, res) => {
+
+    res.send(`<p>Phonebook has info for ${size} people</p>
+
+        <p> ${new Date()}</p >`)
 })
 
 const PORT = 3001
