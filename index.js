@@ -11,7 +11,7 @@ app.use(morgan('tiny'));
 const cors = require('cors')
 app.use(cors())
 
-
+const Contact = require('./models/contact')
 
 let persons =
 
@@ -45,15 +45,17 @@ app.get('/', (req, res) => {
     res.send('<h1>Hello World!!</h1>')
 })
 
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
+app.get('/api/persons', (request, response) => {
+    Contact.find({}).then(contacts => {
+        response.json(contacts)
+    })
 })
 
-app.get('/api/info', (req, res) => {
-
-    res.send(`<p>Phonebook has info for ${size} people</p>
-
+app.get('/api/info', (request, response, next) => {
+    Contact.find({}).then(data => {
+        response.send(`<p>Phonebook has info for ${data.length} people</p>
         <p> ${new Date()}</p >`)
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -85,7 +87,7 @@ const generateId = () => {
     return Math.floor(Math.random() * (max - min) + min)
 }
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
     //console.log(body)
     if (!body.name) {
@@ -106,13 +108,17 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const person = {
+    const contact = new Contact({
         name: body.name,
         number: body.number,
-        id: generateId(),
-    }
-    persons = persons.concat(person)
-    response.json(person)
+        // id: generateId(),
+    })
+
+    contact.save().then(savedContact => {
+        response.json(savedContact.toJSON())
+    })
+        //persons = persons.concat(person)
+        .catch(error => next(error))
 })
 
 
