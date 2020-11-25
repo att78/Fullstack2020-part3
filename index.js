@@ -51,31 +51,33 @@ app.get('/api/persons', (request, response) => {
     })
 })
 
-app.get('/api/info', (request, response, next) => {
+app.get('/api/info', (request, response) => {
     Contact.find({}).then(data => {
         response.send(`<p>Phonebook has info for ${data.length} people</p>
         <p> ${new Date()}</p >`)
     })
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = persons.filter(person => person.id !== id)
-
-    response.status(204).end()
+app.delete('/api/persons/:id', (request, response, next) => {
+    Contact.findByIdAndRemove(request.params.id)
+        .then(result =>{
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
+app.get('/api/persons/:id', (request, response, next) => {
 
-    if (person) {
-        console.log("success")
-        response.json(person)
-    } else {
-        console.log("failed")
-        response.status(404).end()
-    }
+    Contact.findById(request.params.id)
+        .then(contact =>{
+            if(contact){
+                response.json(contact.toJSON())
+            }else{
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
+
 })
 
 
@@ -120,6 +122,20 @@ app.post('/api/persons', (request, response, next) => {
         //persons = persons.concat(person)
         .catch(error => next(error))
 })
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+      }
+  
+    next(error)
+  }
+  
+  app.use(errorHandler)
 
 
 

@@ -15,7 +15,7 @@ const contactSchema = new mongoose.Schema({
 
 contactSchema.set('toJSON', {
     transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
+        returnedObject.id = returnedObject._id
         delete returnedObject._id
         delete returnedObject.__v
     }
